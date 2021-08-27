@@ -11,11 +11,14 @@ class PostController extends Controller
 {
     public function index(){
         $posts = post::all();
-        return view('posts.index',['posts' => $posts]);
+        return view('posts.index', ['posts' => $posts]);
     }
+
     public function create(){
+        dd('投稿画面だよ！！');
         return view('posts.create');
     }
+
     public function store(PostRequest $request){
         $post =new post;
         $post->title = $request->title;
@@ -23,5 +26,52 @@ class PostController extends Controller
         $post->user_id = Auth::id();
         $post->save();
         return redirect()->route('post.index');
+    }
+
+    public function show($id){
+        $post = post::findOrFail($id);
+        return view('posts.show' , ['post' => $post]);
+    }
+
+    public function edit($id){
+        $post = Post::findOrFail($id);
+        if ($post->user_id !==Auth::id()) {
+            return redirect('/');
+        }
+
+        $post = [
+            'title' => $post->title,
+            'body' => $post->body
+        ];
+
+        dd($post);
+
+        return view('posts.edit', ['post' => $post]);
+    }
+
+    public function update(PostRequest $request, $id) {
+        $post = Post::findOrFail($id);
+        if ($post->user_id !== Auth::id()) {
+            return redirect('/');
+        }
+
+        $post->title = $request->title;
+        $post->body = $request->body;
+
+        $post->save();
+
+        return redirect('/');
+    }
+
+    public function delete($id) {
+        $post = Post::findOrFail($id);
+
+        if ($post->user_id !== Auth::id()) {
+            return redirect('/');
+        }
+
+        $post->delete();
+
+        return redirect('/');
     }
 }
